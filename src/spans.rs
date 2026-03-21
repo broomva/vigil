@@ -97,6 +97,30 @@ pub fn record_tool_status(span: &Span, status: &str) {
     span.record(semconv::LIFE_TOOL_STATUS, status);
 }
 
+/// Emit a `gen_ai.evaluation.result` span event with eval attributes.
+///
+/// Records the event on the current span. This follows the OTel GenAI
+/// semantic conventions v1.39.0 for evaluation result events.
+///
+/// # Arguments
+///
+/// * `evaluator` — Name of the evaluator (e.g. `"token_efficiency"`)
+/// * `score` — Normalized quality score in `[0.0, 1.0]`
+/// * `label` — Categorical label (`"good"`, `"warning"`, `"critical"`)
+/// * `layer` — Evaluation layer (`"reasoning"`, `"action"`, `"execution"`, `"safety"`, `"cost"`)
+/// * `timing` — Evaluation timing (`"inline"`, `"async"`)
+pub fn eval_event(evaluator: &str, score: f64, label: &str, layer: &str, timing: &str) {
+    tracing::event!(
+        name: "gen_ai.evaluation.result",
+        tracing::Level::INFO,
+        "life.eval.evaluator" = evaluator,
+        "life.eval.score" = score,
+        "life.eval.label" = label,
+        "life.eval.layer" = layer,
+        "life.eval.timing" = timing,
+    );
+}
+
 /// Write the current trace context (trace_id, span_id) into an EventEnvelope.
 ///
 /// This enables dual-write: events carry OTel correlation IDs so that
@@ -257,5 +281,24 @@ mod tests {
         ensure_subscriber();
         let span = chat_span("test-model", "test", None, None);
         record_finish_reason(&span, "stop");
+    }
+
+    #[test]
+    fn eval_event_does_not_panic() {
+        ensure_subscriber();
+        // Emit eval event within an active span context
+        let span = agent_span("sess-eval", "test-agent");
+        let _guard = span.enter();
+        eval_event("token_efficiency", 0.85, "good", "execution", "inline");
+    }
+
+    #[test]
+    fn eval_event_all_labels() {
+        ensure_subscriber();
+        let span = agent_span("sess-labels", "test-agent");
+        let _guard = span.enter();
+        eval_event("safety_compliance", 0.95, "good", "safety", "inline");
+        eval_event("budget_adherence", 0.65, "warning", "cost", "inline");
+        eval_event("tool_correctness", 0.3, "critical", "action", "async");
     }
 }
