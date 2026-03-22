@@ -7,9 +7,9 @@
 //! # Usage
 //!
 //! ```no_run
-//! use vigil::{VigConfig, init_telemetry};
+//! use life_vigil::{VigConfig, init_telemetry};
 //!
-//! # fn main() -> Result<(), vigil::VigError> {
+//! # fn main() -> Result<(), life_vigil::VigError> {
 //! let config = VigConfig::for_service("arcan").with_env_overrides();
 //! let _guard = init_telemetry(config)?;
 //!

@@ -1,10 +1,11 @@
 [package]
-name = "vigil"
+name = "life-vigil"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 description = "Observability foundation for the Life Agent OS — OpenTelemetry tracing, GenAI semantic conventions, and contract-derived instrumentation"
 license = "MIT"
+repository = "https://github.com/broomva/vigil"
 
 [dependencies]
 # OpenTelemetry core
@@ -19,7 +20,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "regis
 tracing-opentelemetry = "0.30"
 
 # Shared contract
-aios-protocol = { version = "0.1.0", path = "../aiOS/crates/aios-protocol" }
+aios-protocol = { version = "0.2.0", path = "../aiOS/crates/aios-protocol" }
 
 # Error handling
 thiserror = "2.0"
@@ -40,4 +41,3 @@ unused_must_use = "deny"
 
 [lints.clippy]
 dbg_macro = "deny"
-repository = "https://github.com/broomva/vigil"
