@@ -84,6 +84,7 @@ impl VigConfig {
     ///
     /// Supported env vars:
     /// - `OTEL_EXPORTER_OTLP_ENDPOINT` → `otlp_endpoint`
+    /// - `OTEL_EXPORTER_OTLP_PROTOCOL` → `otlp_protocol` ("grpc" or "http/protobuf")
     /// - `OTEL_EXPORTER_OTLP_HEADERS` → `otlp_headers` (comma-separated `key=value` pairs)
     /// - `OTEL_SERVICE_NAME` → `service_name`
     /// - `VIGIL_LOG_FORMAT` → `log_format` ("json" or "pretty")
@@ -93,6 +94,15 @@ impl VigConfig {
         if let Ok(endpoint) = env::var("OTEL_EXPORTER_OTLP_ENDPOINT") {
             if !endpoint.is_empty() {
                 self.otlp_endpoint = Some(endpoint);
+            }
+        }
+
+        // Standard OTel protocol env var: "grpc" or "http/protobuf"
+        if let Ok(protocol) = env::var("OTEL_EXPORTER_OTLP_PROTOCOL") {
+            match protocol.to_lowercase().as_str() {
+                "grpc" => self.otlp_protocol = OtlpProtocol::Grpc,
+                "http/protobuf" | "http" => self.otlp_protocol = OtlpProtocol::Http,
+                _ => {} // ignore unknown values
             }
         }
 
